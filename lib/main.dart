@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import './transaction.dart';
+import 'package:second_app/widgets/new_transaction.dart';
+import 'package:second_app/widgets/transaction_list.dart';
+import './widgets/new_transaction.dart';
+import './models/transaction.dart';
 
 void main() => runApp(const MyApp());
 
@@ -7,17 +10,22 @@ class MyApp extends StatelessWidget {
   const MyApp({Key key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       title: 'Flutter App',
       home: MyHomePage(),
     );
   }
 }
 
-class MyHomePage extends StatelessWidget {
-  MyHomePage({Key key}) : super(key: key);
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({Key key}) : super(key: key);
 
-  List<Transaction> transactions = [
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final List<Transaction> _userTransaction = [
     Transaction(
       id: 'T-1',
       title: 'New Phone',
@@ -31,74 +39,62 @@ class MyHomePage extends StatelessWidget {
       date: DateTime.now(),
     )
   ];
+  void _addTransaction(String txtitle, double txamount) {
+    final newTx = Transaction(
+      amount: txamount,
+      date: DateTime.now(),
+      title: txtitle,
+      id: DateTime.now().toString(),
+    );
+    setState(() {
+      _userTransaction.add(newTx);
+    });
+  }
+
+  void _openFieldsToAddTransactions(BuildContext ctx) {
+    showModalBottomSheet(
+        context: ctx,
+        builder: (_) {
+          return NewTransaction(_addTransaction);
+        });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Flutter App'),
-      ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Container(
-            width: double.infinity,
-            child: const Card(
-              color: Colors.blue,
-              elevation: 5,
-              child: Text('CHART!'),
-            ),
-          ),
-          Column(
-            children: transactions.map((tx) {
-              return Card(
-                child: Row(
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.symmetric(
-                        vertical: 10,
-                        horizontal: 15,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.purple,
-                          width: 2,
-                        ),
-                      ),
-                      padding: const EdgeInsets.all(8),
-                      child: Text(
-                        tx.amount.toString(),
-                        style: const TextStyle(
-                          color: Colors.purple,
-                          fontSize: 19,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(tx.title,
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
-                            )),
-                        Text(tx.date.toString(),
-                            style: const TextStyle(
-                              color: Colors.grey,
-                              fontSize: 15,
-                            ))
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
-          ),
+        actions: [
+          IconButton(
+              onPressed: () {
+                _openFieldsToAddTransactions(context);
+              },
+              icon: const Icon(Icons.add)),
         ],
       ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              width: double.infinity,
+              child: const Card(
+                color: Colors.blue,
+                elevation: 5,
+                child: Text('CHART!'),
+              ),
+            ),
+            TransactionList(_userTransaction),
+            FloatingActionButton(
+              onPressed: () {
+                _openFieldsToAddTransactions(context);
+              },
+              child: const Icon(Icons.add),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }
