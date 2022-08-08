@@ -9,24 +9,24 @@ class NewTransaction extends StatefulWidget {
 }
 
 class _NewTransactionState extends State<NewTransaction> {
+  final titleController = TextEditingController();
+  final amountController = TextEditingController();
+  void submitData() {
+    final enteredTitle = titleController.text;
+    final enteredAmount = double.parse(amountController.text);
+
+    if (enteredTitle.isEmpty || enteredAmount <= 0) {
+      return;
+    }
+    widget.addTransaction(
+      enteredTitle,
+      enteredAmount,
+    );
+    Navigator.of(context).pop();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final titleController = TextEditingController();
-    final amountController = TextEditingController();
-    void submitData() {
-      final enteredTitle = titleController.text;
-      final enteredAmount = double.parse(amountController.text);
-
-      if (enteredTitle.isEmpty || enteredAmount <= 0) {
-        return;
-      }
-      widget.addTransaction(
-        enteredTitle,
-        enteredAmount,
-      );
-      Navigator.of(context).pop();
-    }
-
     return Card(
       elevation: 2,
       child: Container(
