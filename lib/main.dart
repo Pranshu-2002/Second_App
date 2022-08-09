@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:second_app/widgets/new_transaction.dart';
 import './widgets/new_transaction.dart';
 import './models/transaction.dart';
-import 'package:intl/intl.dart';
 import './widgets/chart.dart';
+import './widgets/list_transactions.dart';
 
 void main() => runApp(const MyApp());
 
@@ -29,6 +29,7 @@ class MyApp extends StatelessWidget {
                 fontWeight: FontWeight.w600,
                 // color: Colors.purple,
               ),
+              button: const TextStyle(color: Colors.white),
             ),
         colorScheme: ColorScheme.fromSwatch(
           primarySwatch: Colors.purple,
@@ -46,30 +47,18 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final List<Transaction> _userTransaction = [
-    // Transaction(
-    //   id: 'T-1',
-    //   title: 'New Phone',
-    //   amount: 35000,
-    //   date: DateTime.now(),
-    // ),
-    // Transaction(
-    //   id: 'T-2',
-    //   title: 'Household Groceries',
-    //   amount: 4990.10,
-    //   date: DateTime.now(),
-    // )
-  ];
+  final List<Transaction> _userTransaction = [];
   List<Transaction> get _recentTransactions {
     return _userTransaction.where((tx) {
       return tx.date.isAfter(DateTime.now().subtract(const Duration(days: 7)));
     }).toList();
   }
 
-  void _addTransaction(String txtitle, double txamount) {
+  void _addNewTransaction(
+      String txtitle, double txamount, DateTime selectDate) {
     final newTx = Transaction(
       amount: txamount,
-      date: DateTime.now(),
+      date: selectDate,
       title: txtitle,
       id: DateTime.now().toString(),
     );
@@ -78,9 +67,9 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void _delTransaction(index) {
+  void _delTransaction(String id) {
     setState(() {
-      _userTransaction.removeAt(index);
+      _userTransaction.removeWhere((element) => element.id == id);
     });
   }
 
@@ -88,7 +77,7 @@ class _MyHomePageState extends State<MyHomePage> {
     showModalBottomSheet(
         context: ctx,
         builder: (_) {
-          return NewTransaction(_addTransaction);
+          return NewTransaction(_addNewTransaction);
         });
   }
 
@@ -113,65 +102,27 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             Chart(_recentTransactions),
             Container(
-              height: 450,
-              child: _userTransaction.isEmpty
-                  ? Column(
-                      children: [
-                        Text(
-                          'No transaction added yet!',
-                          style: Theme.of(context).textTheme.headline6,
-                        ),
-                        const SizedBox(
-                          height: 30,
-                        ),
-                        SizedBox(
-                          height: 300,
-                          child: Image.asset(
-                            'assets/image/waiting.png',
-                            fit: BoxFit.cover,
+                height: 450,
+                child: _userTransaction.isEmpty
+                    ? Column(
+                        children: [
+                          Text(
+                            'No transaction added yet!',
+                            style: Theme.of(context).textTheme.headline6,
                           ),
-                        ),
-                      ],
-                    )
-                  : ListView.builder(
-                      itemBuilder: (ctx, index) {
-                        return Card(
-                          elevation: 5,
-                          margin: const EdgeInsets.symmetric(
-                            vertical: 8,
-                            horizontal: 5,
+                          const SizedBox(
+                            height: 30,
                           ),
-                          child: ListTile(
-                            leading: CircleAvatar(
-                                backgroundColor:
-                                    Theme.of(context).colorScheme.primary,
-                                radius: 30,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(6),
-                                  child: FittedBox(
-                                      child: Text(
-                                    '₹${_userTransaction[index].amount}',
-                                  )),
-                                )),
-                            title: Text(
-                              _userTransaction[index].title,
-                              style: Theme.of(context).textTheme.headline6,
-                            ),
-                            subtitle: Text(DateFormat.yMd()
-                                .add_jm()
-                                .format(_userTransaction[index].date)),
-                            trailing: IconButton(
-                              onPressed: (() {
-                                _delTransaction(index);
-                              }),
-                              icon: const Icon(Icons.delete),
+                          SizedBox(
+                            height: 300,
+                            child: Image.asset(
+                              'assets/image/waiting.png',
+                              fit: BoxFit.cover,
                             ),
                           ),
-                        );
-                      },
-                      itemCount: _userTransaction.length,
-                    ),
-            ),
+                        ],
+                      )
+                    : TransactionList(_userTransaction, _delTransaction)),
             FloatingActionButton(
               onPressed: () {
                 _openFieldsToAddTransactions(context);
