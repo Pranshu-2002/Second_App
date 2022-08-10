@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:second_app/widgets/new_transaction.dart';
 import './widgets/new_transaction.dart';
 import './models/transaction.dart';
 import './widgets/chart.dart';
 import './widgets/list_transactions.dart';
 
-void main() => runApp(const MyApp());
+void main() {
+  runApp(const MyApp());
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({Key key}) : super(key: key);
@@ -48,6 +49,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final List<Transaction> _userTransaction = [];
+  bool _showChart = false;
   List<Transaction> get _recentTransactions {
     return _userTransaction.where((tx) {
       return tx.date.isAfter(DateTime.now().subtract(const Duration(days: 7)));
@@ -81,58 +83,95 @@ class _MyHomePageState extends State<MyHomePage> {
         });
   }
 
+  List<Widget> _buildLandscapeContent(
+      MediaQueryData mediaQuery, AppBar appBar, Widget showList) {
+    return [
+      Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+        const Text('Show Chart'),
+        Switch(
+          activeColor: Theme.of(context).colorScheme.secondary,
+          value: _showChart,
+          onChanged: (val) {
+            setState(() {
+              _showChart = val;
+            });
+          },
+        )
+      ]),
+      _showChart
+          ? Container(
+              height: (mediaQuery.size.height -
+                      appBar.preferredSize.height -
+                      mediaQuery.padding.top) *
+                  0.7,
+              child: Chart(_recentTransactions))
+          : showList,
+    ];
+  }
+
+  List<Widget> _buildPortraitContent(
+      MediaQueryData mediaQuery, AppBar appBar, Widget showList) {
+    return [
+      Container(
+          height: (mediaQuery.size.height -
+                  appBar.preferredSize.height -
+                  mediaQuery.padding.top) *
+              0.3,
+          child: Chart(_recentTransactions)),
+      showList
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Personal Expenses',
-        ),
-        actions: [
-          IconButton(
-              onPressed: () {
-                _openFieldsToAddTransactions(context);
-              },
-              icon: const Icon(Icons.add)),
-        ],
+    final mediaQuery = MediaQuery.of(context);
+    final isLandscape = mediaQuery.orientation == Orientation.landscape;
+    final showIconButton = IconButton(
+        onPressed: () {
+          _openFieldsToAddTransactions(context);
+        },
+        icon: const Icon(Icons.add));
+    final appBar = AppBar(
+      title: const Text(
+        'Personal Expenses',
       ),
+      actions: [
+        isLandscape
+            ? (mediaQuery.size.height > 450 ? showIconButton : Container())
+            : showIconButton,
+      ],
+    );
+
+    final showFloatingButton = FloatingActionButton(
+      onPressed: () {
+        _openFieldsToAddTransactions(context);
+      },
+      child: const Icon(Icons.add),
+    );
+    final showList = Container(
+      height: (mediaQuery.size.height -
+              appBar.preferredSize.height -
+              mediaQuery.padding.top) *
+          0.7,
+      child: TransactionList(_userTransaction, _delTransaction),
+    );
+    return Scaffold(
+      appBar: appBar,
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Chart(_recentTransactions),
-            Container(
-                height: 450,
-                child: _userTransaction.isEmpty
-                    ? Column(
-                        children: [
-                          Text(
-                            'No transaction added yet!',
-                            style: Theme.of(context).textTheme.headline6,
-                          ),
-                          const SizedBox(
-                            height: 30,
-                          ),
-                          SizedBox(
-                            height: 300,
-                            child: Image.asset(
-                              'assets/image/waiting.png',
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ],
-                      )
-                    : TransactionList(_userTransaction, _delTransaction)),
-            FloatingActionButton(
-              onPressed: () {
-                _openFieldsToAddTransactions(context);
-              },
-              child: const Icon(Icons.add),
-            ),
+            if (isLandscape)
+              ..._buildLandscapeContent(mediaQuery, appBar, showList),
+            if (!isLandscape)
+              ..._buildPortraitContent(mediaQuery, appBar, showList),
           ],
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: isLandscape
+          ? (mediaQuery.size.height > 450 ? showFloatingButton : Container())
+          : showFloatingButton,
     );
   }
 }

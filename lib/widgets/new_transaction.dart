@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/date_time_patterns.dart';
 import 'package:intl/intl.dart';
 
 class NewTransaction extends StatefulWidget {
@@ -37,12 +36,10 @@ class _NewTransactionState extends State<NewTransaction> {
             builder: (context, child) {
               return Theme(
                   data: ThemeData().copyWith(
-                      colorScheme: const ColorScheme.dark(
-                        primary: Colors.amber,
-                        surface: Colors.purple,
-                        onSurface: Colors.black,
-                      ),
-                      dialogBackgroundColor: Colors.white),
+                    colorScheme: ColorScheme.fromSwatch(
+                      primarySwatch: Colors.amber,
+                    ),
+                  ),
                   child: child);
             },
             context: context,
@@ -64,58 +61,57 @@ class _NewTransactionState extends State<NewTransaction> {
     return Card(
       elevation: 2,
       child: Container(
-        margin: const EdgeInsets.all(8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            TextField(
-              decoration: const InputDecoration(hintText: 'Title'),
-              controller: _titleController,
-              onSubmitted: (_) => _submitData(),
-            ),
-            TextField(
-              decoration: const InputDecoration(hintText: 'Amount'),
-              controller: _amountController,
-              keyboardType: TextInputType.number,
-              onSubmitted: (_) => _submitData(),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(4),
-              child: Row(
-                children: [
-                  Flexible(
-                    fit: FlexFit.tight,
-                    child: Text(
-                      selectedDate == null
-                          ? 'No date chosen!'
-                          : 'Picked Date : ${DateFormat.yMd().format(selectedDate)}',
-                      style: TextStyle(color: Colors.grey.shade700),
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      _showDatePicker();
-                    },
-                    icon: const Icon(Icons.date_range_outlined),
-                    // child: const Text(
-                    //   'Choose date',
-                    //   style: TextStyle(
-                    //     color: Colors.amber,
-                    //     fontWeight: FontWeight.bold,
-                    //   ),
-                    // ),
-                  )
-                ],
+        margin: EdgeInsets.only(
+            top: 8,
+            left: 8,
+            right: 8,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 10),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              TextField(
+                decoration: const InputDecoration(hintText: 'Title'),
+                controller: _titleController,
+                onSubmitted: (_) => _submitData(),
               ),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                  primary: Colors.purple,
-                  onPrimary: Theme.of(context).textTheme.button.color),
-              child: const Text('Add Transaction'),
-              onPressed: () => _submitData(),
-            ),
-          ],
+              TextField(
+                decoration: const InputDecoration(hintText: 'Amount'),
+                controller: _amountController,
+                keyboardType: TextInputType.number,
+                onSubmitted: (_) => _submitData(),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(4),
+                child: Row(
+                  children: [
+                    Flexible(
+                      fit: FlexFit.tight,
+                      child: Text(
+                        selectedDate == null
+                            ? 'No date chosen!'
+                            : 'Picked Date : ${DateFormat.yMd().format(selectedDate)}',
+                        style: TextStyle(color: Colors.grey.shade700),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        _showDatePicker();
+                      },
+                      icon: const Icon(Icons.date_range_outlined),
+                    )
+                  ],
+                ),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    primary: Colors.purple,
+                    onPrimary: Theme.of(context).textTheme.button.color),
+                child: const Text('Add Transaction'),
+                onPressed: () => _submitData(),
+              ),
+            ],
+          ),
         ),
       ),
     );
